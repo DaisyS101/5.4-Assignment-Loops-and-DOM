@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2e9">
+  <title>Loops &amp; DOM | Fieldnotes Dev Lab</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f2e9;
+      --ink: #20231f;
+      --muted: #70736a;
+      --line: #d9d9ce;
+      --white: #fffef9;
+      --green: #83ec79;
+      --blue: #8bc4ed;
+      --coral: #ff856b;
+      --purple: #a681da;
+      --display: Georgia, 'Times New Roman', serif;
+      --body: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#fdfdd5 0.7px, transparent 0.7px);
+      background-size: 18px 18px;
+      font-family: var(--body);
+      line-height: 1.5;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .shell {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      background: var(--green);
+      font-family: var(--display);
+      font-size: 17px;
+      font-weight: 400;
+    }
+
+    .top-note {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    main { padding: 48px 0 72px; }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      align-items: end;
+      gap: 28px;
+      margin-bottom: 34px;
+      animation: arrive 550ms ease-out both;
+    }
+
+    .eyebrow, .section-kicker {
+      color: #687347;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 700px;
+      margin: 10px 0 12px;
+      font-family: var(--display);
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 400;
+      line-height: 0.98;
+    }
+
+    h1 em { color: #617d27; font-weight: 400; }
+
+    .intro-copy {
+      max-width: 570px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .lesson-stamp {
+      justify-self: end;
+      width: 176px;
+      padding: 14px 16px;
+      border: 1px solid var(--ink);
+      background: var(--green);
+      transform: rotate(2deg);
+    }
+
+    .lesson-stamp span { display: block; }
+    .stamp-label { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; }
+    .stamp-number { margin-top: 4px; font-family: var(--display); font-size: 27px; line-height: 1.1; }
+
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .lesson {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--white);
+      animation: arrive 600ms ease-out both;
+    }
+
+    .lesson:nth-child(2) { animation-delay: 60ms; }
+    .lesson:nth-child(3) { animation-delay: 120ms; }
+    .lesson:nth-child(4) { animation-delay: 180ms; }
+    .lesson.wide { grid-column: 1 / -1; }
+
+    .lesson-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .section-number {
+      display: grid;
+      flex: 0 0 32px;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      font-family: var(--display);
+      font-size: 15px;
+    }
+
+    .lesson:nth-child(1) .section-number { background: var(--green); }
+    .lesson:nth-child(2) .section-number { background: var(--blue); }
+    .lesson:nth-child(3) .section-number { background: var(--coral); }
+    .lesson:nth-child(4) .section-number { background: var(--purple); }
+    .lesson:nth-child(5) .section-number { background: #f3cb64; }
+
+    h2 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 23px;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+
+    .section-kicker { margin-bottom: 3px; font-size: 9px; }
+
+    .lesson-description {
+      min-height: 44px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+
+    .control-label { color: var(--muted); font-size: 12px; }
+
+    input[type="number"] {
+      width: 64px;
+      height: 36px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .action-button {
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+    }
+
+    .action-button:hover { background: var(--green); color: var(--ink); transform: translateY(-1px); }
+    .action-button:focus-visible, input:focus-visible { outline: 3px solid #6793b6; outline-offset: 3px; }
+
+    .output-frame {
+      min-height: 82px;
+      padding: 12px;
+      border: 1px dashed var(--line);
+      background: #f8f7f0;
+    }
+
+    .output-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .count-badge {
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 10px;
+      letter-spacing: 0;
+    }
+
+    .loop-output { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .loop-chip {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      background: var(--green);
+      font-family: var(--display);
+      font-size: 15px;
+      animation: pop-in 230ms ease-out both;
+    }
+
+    .loop-chip:nth-child(even) { background: var(--blue); }
+
+    .while-output { display: grid; gap: 5px; }
+
+    .while-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #51564d;
+      font-size: 12px;
+      animation: arrive 180ms ease-out both;
+    }
+
+    .step-dot { width: 7px; height: 7px; border-radius: 50%; background: #6fae66; }
+
+    .code-line {
+      overflow-x: auto;
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      border-radius: 3px;
+      background: #252b28;
+      color: #d9e6c3;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 11px;
+      white-space: pre;
+    }
+
+    .toggle-stage {
+      min-height: 116px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid #deded3;
+      background: #f5f3ea;
+      transition: background-color 250ms ease, color 250ms ease;
+    }
+
+    .toggle-stage.is-awake { border-color: var(--ink); background: #f1a17f; color: #28221f; }
+    .stage-label { font-family: var(--display); font-size: 21px; }
+    .stage-subtitle { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .toggle-stage.is-awake .stage-subtitle { color: #563d34; }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid var(--ink);
+      border-radius: 99px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .switch::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      background: var(--green);
+      content: '';
+      transition: transform 200ms ease;
+    }
+
+    .switch[aria-pressed="true"]::after { transform: translateX(20px); background: #fff; }
+
+    .range-wrap { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px 14px; }
+    input[type="range"] { width: 100%; accent-color: #66822d; cursor: pointer; }
+    .range-value { min-width: 58px; font-family: var(--display); font-size: 24px; text-align: right; }
+    .range-scale { grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+
+    .mood-stage {
+      --heat: 0%;
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid #9da08f;
+      background: #eef4df;
+      transition: background-color 250ms ease, border-color 250ms ease;
+    }
+
+    .mood-stage[data-mood="steady"] { border-color: #b29e42; background: #f5edc9; }
+    .mood-stage[data-mood="bright"] { border-color: #d77b5c; background: #f9ded1; }
+    .mood-line { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+    .mood-name { font-weight: 800; }
+
+    .meter-track { height: 8px; margin-top: 10px; overflow: hidden; border: 1px solid #70736a; background: #fff; }
+    .meter-fill { width: var(--heat); height: 100%; background: linear-gradient(90deg, #8fc05d, #f1be4e, #f17d64); transition: width 180ms ease; }
+
+    .combo {
+      display: grid;
+      grid-template-columns: minmax(190px, 0.8fr) 1.2fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .combo-copy { color: var(--muted); font-size: 13px; }
+    .combo-copy p { margin: 0 0 14px; }
+    .combo-controls { display: flex; align-items: center; gap: 9px; }
+
+    .signal-board {
+      --signal: 0%;
+      min-height: 192px;
+      padding: 16px;
+      border: 1px solid var(--ink);
+      background: #eff5df;
+      transition: background-color 220ms ease;
+    }
+
+    .signal-board[data-mood="steady"] { background: #f5edc9; }
+    .signal-board[data-mood="bright"] { background: #f9ded1; }
+    .signal-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .signal-title { font-family: var(--display); font-size: 19px; }
+    .signal-score { font-family: var(--display); font-size: 28px; }
+    .signal-bars { min-height: 82px; display: flex; align-items: end; gap: 6px; margin-top: 13px; border-bottom: 1px solid #77796e; }
+
+    .signal-bar {
+      flex: 1 1 0;
+      min-width: 8px;
+      height: var(--bar-height);
+      border: 1px solid var(--ink);
+      border-bottom: 0;
+      background: var(--bar-color);
+      animation: grow-up 400ms cubic-bezier(.2,.7,.2,1) both;
+      transform-origin: bottom;
+    }
+
+    .signal-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; color: var(--muted); font-size: 10px; }
+    .combo .code-line { margin-top: 14px; }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @keyframes arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pop-in { from { opacity: 0; transform: scale(.75); } to { opacity: 1; transform: scale(1); } }
+    @keyframes grow-up { from { transform: scaleY(.1); } to { transform: scaleY(1); } }
+
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 28px, 540px); }
+      main { padding: 34px 0 46px; }
+      .intro { grid-template-columns: 1fr; gap: 18px; }
+      .lesson-stamp { justify-self: start; width: 150px; }
+      .lesson-grid { grid-template-columns: 1fr; }
+      .lesson.wide { grid-column: auto; }
+      .lesson-description { min-height: 0; }
+      .combo { grid-template-columns: 1fr; gap: 12px; }
+      .top-note { font-size: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">f</span><span>Fieldnotes / Dev Lab</span></div>
+    <div class="top-note">5.4 &nbsp; / &nbsp; JavaScript fundamentals</div>
+  </header>
+
+  <main class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow">A little practice, a lot of possibility</div>
+        <h1 id="page-title">Loops, meet<br><em>the DOM.</em></h1>
+        <p class="intro-copy">Repeat an action, make something appear, then let a changing value reshape the page. Five small experiments, all in one place.</p>
+      </div>
+      <aside class="lesson-stamp" aria-label="Lesson 5.4: loops and the DOM">
+        <span class="stamp-label">Today's field study</span>
+        <span class="stamp-number">Loops + DOM</span>
+      </aside>
+    </section>
+
+    <div class="lesson-grid">
+      <section class="lesson" aria-labelledby="for-title">
+        <div class="lesson-heading">
+          <span class="section-number" aria-hidden="true">01</span>
+          <div><div class="section-kicker">Repeat a known number of times</div><h2 id="for-title">For loop</h2></div>
+        </div>
+        <p class="lesson-description">A <code>for</code> loop counts from 1 to your number. Each pass creates a new tile and adds it to the page.</p>
+        <div class="control-row">
+          <label class="control-label" for="for-count">Make</label>
+          <input id="for-count" type="number" min="1" max="12" value="6" inputmode="numeric">
+          <span class="control-label">tiles</span>
+          <button class="action-button" id="for-run" type="button">Run for loop</button>
+        </div>
+        <div class="output-frame" aria-live="polite">
+          <div class="output-label"><span>DOM output</span><span class="count-badge" id="for-result-count">0 tiles</span></div>
+          <div class="loop-output" id="for-output"></div>
+        </div>
+        <pre class="code-line"><code>for (let i = 1; i &lt;= count; i++) { /* add a tile */ }</code></pre>
+      </section>
+
+      <section class="lesson" aria-labelledby="while-title">
+        <div class="lesson-heading">
+          <span class="section-number" aria-hidden="true">02</span>
+          <div><div class="section-kicker">Repeat until a condition is met</div><h2 id="while-title">While loop</h2></div>
+        </div>
+        <p class="lesson-description">A <code>while</code> loop keeps working while the counter is below your target, adding one line for each completed pass.</p>
+        <div class="control-row">
+          <label class="control-label" for="while-count">Stop at</label>
+          <input id="while-count" type="number" min="1" max="8" value="4" inputmode="numeric">
+          <span class="control-label">steps</span>
+          <button class="action-button" id="while-run" type="button">Run while loop</button>
+        </div>
+        <div class="output-frame" aria-live="polite">
+          <div class="output-label"><span>Work log</span><span class="count-badge" id="while-result-count">0 steps</span></div>
+          <div class="while-output" id="while-output"></div>
+        </div>
+        <pre class="code-line"><code>while (step &lt; target) { step++; /* log step */ }</code></pre>
+      </section>
+
+      <section class="lesson" aria-labelledby="css-title">
+        <div class="lesson-heading">
+          <span class="section-number" aria-hidden="true">03</span>
+          <div><div class="section-kicker">A class changes the look</div><h2 id="css-title">Change CSS with JS</h2></div>
+        </div>
+        <p class="lesson-description">JavaScript toggles a CSS class on the stage. The class controls the color, while the button updates its accessible state.</p>
+        <div class="toggle-stage" id="toggle-stage">
+          <div><span class="stage-label" id="stage-label">Quiet mode</span><span class="stage-subtitle">This panel is styled by a class.</span></div>
+          <button class="switch" id="css-toggle" type="button" aria-label="Turn on bright mode" aria-pressed="false"></button>
+        </div>
+        <pre class="code-line"><code>stage.classList.toggle('is-awake');</code></pre>
+      </section>
+
+      <section class="lesson" aria-labelledby="variable-title">
+        <div class="lesson-heading">
+          <span class="section-number" aria-hidden="true">04</span>
+          <div><div class="section-kicker">The value sets the style</div><h2 id="variable-title">CSS from a variable</h2></div>
+        </div>
+        <p class="lesson-description">Move the slider to change a JavaScript number. Its value updates a CSS custom property and the stage's color mood.</p>
+        <div class="range-wrap">
+          <label class="control-label" for="heat-range">Signal strength</label>
+          <output class="range-value" id="heat-value" for="heat-range">42%</output>
+          <input id="heat-range" type="range" min="0" max="100" value="42">
+          <span class="range-scale"><span>0</span><span>100</span></span>
+        </div>
+        <div class="mood-stage" id="mood-stage" data-mood="calm" aria-live="polite">
+          <div class="mood-line"><span>Current mood</span><span class="mood-name" id="mood-name">Calm</span></div>
+          <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="meter-fill"></div></div>
+        </div>
+        <pre class="code-line"><code>stage.style.setProperty('--heat', value + '%');</code></pre>
+      </section>
+
+      <section class="lesson wide" aria-labelledby="together-title">
+        <div class="lesson-heading">
+          <span class="section-number" aria-hidden="true">05</span>
+          <div><div class="section-kicker">Beyond the video / put it together</div><h2 id="together-title">Build a loop-powered signal</h2></div>
+        </div>
+        <div class="combo">
+          <div class="combo-copy">
+            <p>First, a <code>while</code> loop fills a queue with signal readings. Then a <code>for</code> loop turns every reading into a bar. The average becomes a variable that changes the board's color.</p>
+            <div class="combo-controls">
+              <label class="control-label" for="round-count">Readings</label>
+              <input id="round-count" type="number" min="3" max="10" value="6" inputmode="numeric">
+              <button class="action-button" id="signal-run" type="button">Build signal</button>
+            </div>
+            <pre class="code-line"><code>while (queue.length &lt; rounds) queue.push(read());
+for (const item of queue) render(item);
+board.dataset.mood = moodFor(average);</code></pre>
+          </div>
+          <div class="signal-board" id="signal-board" data-mood="calm" aria-live="polite">
+            <div class="signal-meta"><span class="signal-title">Reading sequence</span><span class="signal-score" id="signal-score">--</span></div>
+            <div class="signal-bars" id="signal-bars" aria-label="Signal readings"></div>
+            <div class="signal-foot"><span id="signal-status">Ready for readings</span><span id="signal-mood">Awaiting signal</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer style="margin-top:22px"><span>Fieldnotes / Dev Lab</span><span>Small loops. Real page changes.</span></footer>
+  </main>
+
+  <script>
+    const forCount = document.querySelector('#for-count');
+    const forOutput = document.querySelector('#for-output');
+    const forResultCount = document.querySelector('#for-result-count');
+
+    function renderForLoop() {
+      const count = Math.max(1, Math.min(12, Number(forCount.value) || 1));
+      forCount.value = count;
+      forOutput.replaceChildren();
+
+      for (let index = 1; index <= count; index++) {
+        const tile = document.createElement('span');
+        tile.className = 'loop-chip';
+        tile.textContent = index;
+        tile.setAttribute('aria-label', `Tile ${index}`);
+        forOutput.append(tile);
+      }
+
+      forResultCount.textContent = `${count} ${count === 1 ? 'tile' : 'tiles'}`;
+    }
+
+    const whileCount = document.querySelector('#while-count');
+    const whileOutput = document.querySelector('#while-output');
+    const whileResultCount = document.querySelector('#while-result-count');
+
+    function renderWhileLoop() {
+      const target = Math.max(1, Math.min(8, Number(whileCount.value) || 1));
+      let step = 0;
+      whileCount.value = target;
+      whileOutput.replaceChildren();
+
+      while (step < target) {
+        step++;
+        const row = document.createElement('div');
+        row.className = 'while-step';
+        row.innerHTML = `<span class="step-dot" aria-hidden="true"></span><span>Step ${step} complete</span>`;
+        whileOutput.append(row);
+      }
+
+      whileResultCount.textContent = `${step} ${step === 1 ? 'step' : 'steps'}`;
+    }
+
+    const toggleButton = document.querySelector('#css-toggle');
+    const toggleStage = document.querySelector('#toggle-stage');
+    const stageLabel = document.querySelector('#stage-label');
+
+    toggleButton.addEventListener('click', () => {
+      const isAwake = toggleButton.getAttribute('aria-pressed') !== 'true';
+      toggleButton.setAttribute('aria-pressed', String(isAwake));
+      toggleButton.setAttribute('aria-label', isAwake ? 'Turn off bright mode' : 'Turn on bright mode');
+      toggleStage.classList.toggle('is-awake', isAwake);
+      stageLabel.textContent = isAwake ? 'Bright mode' : 'Quiet mode';
+    });
+
+    const heatRange = document.querySelector('#heat-range');
+    const heatValue = document.querySelector('#heat-value');
+    const moodStage = document.querySelector('#mood-stage');
+    const moodName = document.querySelector('#mood-name');
+
+    function moodFor(value) {
+      if (value >= 70) return 'bright';
+      if (value >= 35) return 'steady';
+      return 'calm';
+    }
+
+    function updateHeat() {
+      const value = Number(heatRange.value);
+      const mood = moodFor(value);
+      heatValue.value = `${value}%`;
+      moodName.textContent = mood[0].toUpperCase() + mood.slice(1);
+      moodStage.dataset.mood = mood;
+      moodStage.style.setProperty('--heat', `${value}%`);
+    }
+
+    heatRange.addEventListener('input', updateHeat);
+
+    const roundCount = document.querySelector('#round-count');
+    const signalBoard = document.querySelector('#signal-board');
+    const signalBars = document.querySelector('#signal-bars');
+    const signalScore = document.querySelector('#signal-score');
+    const signalStatus = document.querySelector('#signal-status');
+    const signalMood = document.querySelector('#signal-mood');
+
+    function buildSignal() {
+      const rounds = Math.max(3, Math.min(10, Number(roundCount.value) || 3));
+      roundCount.value = rounds;
+      const queue = [];
+      signalBars.replaceChildren();
+
+      while (queue.length < rounds) {
+        const readingNumber = queue.length + 1;
+        queue.push({ value: Math.min(100, 12 + readingNumber * 9 + (readingNumber % 3) * 7) });
+      }
+
+      let total = 0;
+      const colors = ['#c4ef59', '#8bc4ed', '#ff856b', '#c3a8e8'];
+      for (let index = 0; index < queue.length; index++) {
+        const reading = queue[index];
+        total += reading.value;
+        const bar = document.createElement('span');
+        bar.className = 'signal-bar';
+        bar.style.setProperty('--bar-height', `${reading.value}%`);
+        bar.style.setProperty('--bar-color', colors[index % colors.length]);
+        bar.style.animationDelay = `${index * 35}ms`;
+        bar.setAttribute('aria-label', `Reading ${index + 1}: ${reading.value}`);
+        signalBars.append(bar);
+      }
+
+      const average = Math.round(total / queue.length);
+      const mood = moodFor(average);
+      signalBoard.style.setProperty('--signal', `${average}%`);
+      signalBoard.dataset.mood = mood;
+      signalScore.textContent = `${average}%`;
+      signalStatus.textContent = `${queue.length} readings processed`;
+      signalMood.textContent = `${mood[0].toUpperCase() + mood.slice(1)} signal`;
+      signalBars.setAttribute('aria-label', `${queue.length} readings, average signal ${average} percent`);
+    }
+
+    document.querySelector('#for-run').addEventListener('click', renderForLoop);
+    document.querySelector('#while-run').addEventListener('click', renderWhileLoop);
+    document.querySelector('#signal-run').addEventListener('click', buildSignal);
+
+    renderForLoop();
+    renderWhileLoop();
+    updateHeat();
+    buildSignal();
+  </script>
+</body>
+</html>
